@@ -41,6 +41,15 @@ We are going to use GCP Pub/Sub to safely store and acknowledge each operation d
 6. Cloud Run -> MoneySender
    1. Request StarkBank to transfer the funds and aknowledge the message
 
+# Setup
+
+## Create a .env file
+```
+BASE_URL=https://sandbox.api.starkbank.com
+```
+## Create your keys
+1. Run the `python setup.py` script to generate a brand new public and private keys
+
 # Deploy
 
 1. Install Google Cloud CLI and configure with the project
