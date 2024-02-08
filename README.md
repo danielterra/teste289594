@@ -40,3 +40,19 @@ We are going to use GCP Pub/Sub to safely store and acknowledge each operation d
    1. Do a http request for each paid invoice to MoneySender
 6. Cloud Run -> MoneySender
    1. Request StarkBank to transfer the funds and aknowledge the message
+
+# Deploy
+
+1. Install Google Cloud CLI and configure with the project
+2. Deploy InvoiceSpamer Job to Cloud Run
+```
+gcloud run deploy invoice-spamer --source ./InvoiceSpamer --region=southamerica-east1
+```
+3. Deploy MoneySender Service to Cloud Run
+```
+gcloud run deploy money-sender --source=MoneySender --region=southamerica-east1
+```
+4. Deploy InvoiceUpdater Service to Cloud Run
+```
+gcloud run deploy invoice-updater --source ./InvoiceUpdater --region=southamerica-east1
+```
