@@ -32,22 +32,14 @@ def filter_events(events):
     to_transfer = []
 
     for event in events:
-        if event.subscription != "invoice":
-            starkbank.event.update(event.id, is_delivered=True)
-            continue
-        
         log = event.log
         invoice = log.invoice
 
         if log.type == "credited":
-            # acknowledge creation events
-            print(f"aknowledge invoice {log.type} for {invoice.id}")
-            starkbank.event.update(event.id, is_delivered=True)
             to_transfer.append(invoice)
-        else:
-            print(f"aknowledge invoice {log.type} for {invoice.id}")
-            starkbank.event.update(event.id, is_delivered=True)
-            continue
+        
+        print(f"aknowledge invoice {log.type} for {invoice.id}")
+        starkbank.event.update(event.id, is_delivered=True)
         
     return to_transfer
 
@@ -55,7 +47,7 @@ if __name__ == "__main__":
     check_environment()
     starkbank.user = connect_stark()
 
-    events = starkbank.event.query(after="2020-03-20", is_delivered=True)
+    events = starkbank.event.query(after="2020-03-20", is_delivered=False)
     event_list=list(events)
     print(f"Found {len(event_list)} events")
     print("Events", event_list)
