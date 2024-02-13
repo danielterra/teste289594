@@ -41,27 +41,48 @@ We are going to use GCP Pub/Sub to safely store and acknowledge each operation d
 6. Cloud Run -> MoneySender
    1. Request StarkBank to transfer the funds and aknowledge the message
 
-# Setup
+# Unit testing
+- Run `pytest` on the main folder
 
-## Create a .env file
+# Setup
+## .env file
 ```
 BASE_URL=https://sandbox.api.starkbank.com
 ```
-## Create your keys
+## StarkBank keys
 1. Run the `python setup.py` script to generate a brand new public and private keys
+2. Register the public key with Stark Bank as new Project
+
+## Google Cloud Artifact
+1. Create a Google Cloud Artifact Repository for the Docker images
+```
+gcloud artifacts repositories create teste289594-docker --repository-format=docker \
+--location=southamerica-east1 --description="Docker repository"
+```
+2. Run `gcloud auth configure-docker southamerica-east1-docker.pkg.dev` to set as default artifact repo
 
 # Deploy
-
 1. Install Google Cloud CLI and configure with the project
-2. Deploy InvoiceSpamer Job to Cloud Run
+***Im running on a Mac in a arm architecture, we need to use buildx to target linux/amd64 to be used in GC***
+2. Run `docker buildx create --name teste289594 --use` to setup the docker builder
+3. Run `docker buildx inspect --bootstrap` to init buildx
+
+## Deploy invoice_spammer JOB
+1. Run `docker buildx build --platform linux/amd64 -f ./Dockerfile.invoice_spamer -t invoice-spamer:amd64 . --load` to create the docker image
+2. Set the docker file upstream
 ```
-gcloud run deploy invoice-spamer --source ./InvoiceSpamer --region=southamerica-east1
+docker tag invoice-spamer:amd64 \
+southamerica-east1-docker.pkg.dev/teste289594/teste289594-docker/invoice-spamer:amd64
 ```
-3. Deploy MoneySender Service to Cloud Run
+1. Run `docker push southamerica-east1-docker.pkg.dev/teste289594/teste289594-docker/invoice-spamer:amd64`
+2. Run the command to deploy as a Cloud Run Job, the container will be created automatically and pass the environment variables
 ```
-gcloud run deploy money-sender --source=MoneySender --region=southamerica-east1
+gcloud run jobs deploy invoice-spamer \
+    --image southamerica-east1-docker.pkg.dev/teste289594/teste289594-docker/invoice-spamer:amd64 \
+    --tasks 1 \
+    --max-retries 3 \
+    --region southamerica-east1 \
+    --project=teste289594
 ```
-4. Deploy InvoiceUpdater Service to Cloud Run
-```
-gcloud run deploy invoice-updater --source ./InvoiceUpdater --region=southamerica-east1
-```
+
+## Deploy invoice_updater service

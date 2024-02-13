@@ -1,0 +1,16 @@
+# Use an official lightweight Python image.
+FROM python:3.10.7-alpine
+
+# Set the working directory in the container
+WORKDIR /usr/src/app
+
+# Copy the current directory contents into the container at /usr/src/app
+COPY ./requirements.txt .
+COPY ./invoice_spamer.py .
+COPY ./.env .
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Command to run the script
+CMD ["python", "./invoice_spamer.py"]
