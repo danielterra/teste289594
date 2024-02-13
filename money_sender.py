@@ -12,15 +12,15 @@ def heart_beat():
 @app.route('/', methods=['POST'])
 def webhook_listener():
     response_data = request.data.decode("utf-8")
-    print(response_data)
     
     signature = request.headers.get('Digital-Signature')
     
-    # Now, parse the event with the StarkBank SDK
+    print(response_data)
     event = starkbank.event.parse(
         content=response_data,
         signature=signature,
     )
+    print(event)
 
     if event.subscription != "invoice":
         print("event is not invoice subscription")
@@ -31,7 +31,7 @@ def webhook_listener():
     transfer(to_transfer)
 
     # Return a response to StarkBank to acknowledge receipt
-    return jsonify(success=True), 501
+    return jsonify(success=True), 200
 
 if __name__ == '__main__':
     check_environment()
