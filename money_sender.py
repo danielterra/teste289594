@@ -1,16 +1,41 @@
-import os
-
-from flask import Flask
+from flask import Flask, request, jsonify
+import starkbank
+from stark_connect import connect_stark, check_environment
+from invoice_event import transfer, filter_events
 
 app = Flask(__name__)
 
+@app.route('/', methods=['GET'])
+def heart_beat():
+    return jsonify(success=True), 200
 
-@app.route("/")
-def hello_world():
-    """Example Hello World route."""
-    name = os.environ.get("NAME", "World")
-    return f"Hello {name}!"
+@app.route('/', methods=['POST'])
+def webhook_listener():
+    response_data = request.data.decode("utf-8")
+    print(response_data)
+    
+    signature = request.headers.get('Digital-Signature')
+    
+    # Now, parse the event with the StarkBank SDK
+    event = starkbank.event.parse(
+        content=response_data,
+        signature=signature,
+    )
 
+    if event.subscription != "invoice":
+        print("event is not invoice subscription")
+        return jsonify(success=True), 200
+    
+    # event is invoice subscription
+    to_transfer = filter_events([event])
+    transfer(to_transfer)
 
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    # Return a response to StarkBank to acknowledge receipt
+    return jsonify(success=True), 501
+
+if __name__ == '__main__':
+    check_environment()
+    # set the user for the next calls
+    starkbank.user = connect_stark()
+
+    app.run(host='0.0.0.0', port=8080, debug=True)

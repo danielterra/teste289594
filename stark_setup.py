@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Name of the environment variable
-env_var_name = "PRIVATE_KEY"
+env_var_name = "STARK_PRIVATE_KEY"
 
 print(os.environ.get(env_var_name))
 #check if .env has private key
@@ -33,5 +33,5 @@ env_file_path = "./.env"
 
 # Write the encoded string to the .env file
 with open(env_file_path, "a") as env_file:
-    env_file.write(f"\n{env_var_name}:{encoded_string}\n")
+    env_file.write(f"\n{env_var_name}={encoded_string}\n")
     print("Private key was set in the .env file as a base64 string")
